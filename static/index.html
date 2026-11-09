@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#fff4dc">
+<title>Queens – Đặt Tướng</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ffd23f' stroke='%231b1530' stroke-width='1.4' stroke-linejoin='round' d='M3 7l4.5 4L12 4l4.5 7L21 7l-2 11H5z'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="bg"><i></i><i></i><i></i><i></i><i></i></div>
+
+<main id="app">
+  <!-- ============ MÀN HÌNH BẮT ĐẦU ============ -->
+  <section id="screen-start" class="screen active">
+    <div class="hero" id="hero" aria-hidden="true"></div>
+    <h1><span class="t1">Queens</span><span class="t2">Đặt Tướng</span></h1>
+    <p class="tagline">Mỗi vùng màu một vị tướng.<br>Không chung hàng, không chung cột, không chạm nhau.</p>
+    <div class="stack">
+      <button class="btn primary big" id="btn-start"><svg class="ic"><use href="#i-play"/></svg>Start</button>
+      <button class="btn" id="btn-help"><svg class="ic"><use href="#i-help"/></svg>Hướng dẫn</button>
+      <button class="btn" id="btn-sound"></button>
+    </div>
+  </section>
+
+  <!-- ============ CHỌN MÀN ============ -->
+  <section id="screen-levels" class="screen">
+    <header class="bar">
+      <button class="btn icon" data-go="screen-start" aria-label="Quay lại"><svg class="ic"><use href="#i-back"/></svg></button>
+      <h2>Chọn độ khó</h2>
+      <button class="btn icon" id="btn-help2" aria-label="Hướng dẫn"><svg class="ic"><use href="#i-help"/></svg></button>
+    </header>
+    <div class="levels" id="levels"></div>
+  </section>
+
+  <!-- ============ TRÒ CHƠI ============ -->
+  <section id="screen-game" class="screen">
+    <header class="bar">
+      <button class="btn icon" id="btn-quit" aria-label="Thoát"><svg class="ic"><use href="#i-back"/></svg></button>
+      <div class="titlebox"><b id="g-level">Dễ</b><small id="g-size">5×5 · 5 vùng</small></div>
+      <button class="btn icon" id="btn-pause" aria-label="Tạm dừng"><svg class="ic"><use id="pause-use" href="#i-pause"/></svg></button>
+    </header>
+
+    <div class="hud">
+      <div class="pill timer" id="timer"><svg class="ic"><use href="#i-clock"/></svg><span id="t-text">00:00</span></div>
+      <div class="pill live-stars" id="live-stars" title="Số sao nếu hoàn thành ngay bây giờ">
+        <svg class="star" viewBox="0 0 24 24"><use href="#i-star"/></svg><svg class="star" viewBox="0 0 24 24"><use href="#i-star"/></svg><svg class="star" viewBox="0 0 24 24"><use href="#i-star"/></svg>
+      </div>
+      <div class="pill count"><svg class="ic crownic" viewBox="0 0 24 24"><use href="#crown"/></svg><b id="g-placed">0</b><span>/<span id="g-total">0</span></span></div>
+    </div>
+    <div class="timebar" title="Giới hạn 15:00"><i id="timebar"></i></div>
+
+    <div class="board-wrap">
+      <div id="board" class="board" role="grid"></div>
+      <div id="pause-cover" class="pause-cover hidden">
+        <div class="pc-t">Tạm dừng</div>
+        <button class="btn primary" id="btn-resume"><svg class="ic"><use href="#i-play"/></svg>Tiếp tục</button>
+      </div>
+    </div>
+
+    <footer class="tools">
+      <button class="btn tool" id="btn-undo"><svg class="ic"><use href="#i-undo"/></svg><span>Hoàn tác</span></button>
+      <button class="btn tool" id="btn-mark"><svg class="ic"><use href="#i-x"/></svg><span>Đánh dấu</span></button>
+      <button class="btn tool" id="btn-hint"><svg class="ic"><use href="#i-bulb"/></svg><span>Gợi ý</span><em>+30s</em></button>
+      <button class="btn tool" id="btn-restart"><svg class="ic"><use href="#i-reset"/></svg><span>Làm lại</span></button>
+    </footer>
+    <p class="note" id="g-note"></p>
+  </section>
+</main>
+
+<!-- ============ HƯỚNG DẪN ============ -->
+<div class="modal hidden" id="modal-help">
+  <div class="card help">
+    <h2>Hướng dẫn</h2>
+    <p class="lead">Đặt <b>đủ mọi vị tướng</b> lên lưới. Số tướng bằng số vùng màu, mỗi vùng có đúng <b>1</b> tướng.</p>
+    <h3>Luật chơi <em>(cố định)</em></h3>
+    <ol class="rules">
+      <li><span><b>Mỗi vùng màu</b> chỉ có <b>đúng 1</b> tướng.</span></li>
+      <li><span><b>Mỗi hàng</b> chỉ có tối đa 1 tướng.</span></li>
+      <li><span><b>Mỗi cột</b> chỉ có tối đa 1 tướng.</span></li>
+      <li><span><b>8 ô xung quanh</b> một tướng (kể cả đường chéo) không được có tướng khác.</span></li>
+    </ol>
+    <div class="demo" aria-hidden="true">
+      <div class="demo-grid"><i class=""></i><i class="c"></i><i class=""></i><i class=""></i><i class="c"></i><i class="c"></i><i class="c"></i><i class=""></i><i class="c"></i><i class="x"><svg viewBox="0 0 24 24"><use href="#crown"/></svg></i><i class="c"></i><i class="c"></i><i class="c"></i><i class="c"></i><i class="c"></i><i class=""></i></div>
+      <p>Tướng chặn cả <b>hàng</b>, <b>cột</b> và <b>8 ô quanh</b> nó (vùng tô hồng).</p>
+    </div>
+    <h3>Cách chơi</h3>
+    <ul>
+      <li><b>Bấm / chạm</b> vào ô để đặt hoặc nhấc tướng.</li>
+      <li><b>Chuột phải</b> (hoặc nút Đánh dấu) để ghi chú ô chắc chắn trống.</li>
+      <li>Đặt sai luật vẫn được, nhưng tướng sẽ <b class="red">chuyển đỏ</b>. Tướng đúng luật mang màu của vùng.</li>
+      <li>Thắng khi đặt đủ tướng và không có tướng nào đỏ.</li>
+    </ul>
+    <h3>Thời gian &amp; sao</h3>
+    <ul>
+      <li>Đồng hồ chạy từ lúc bắt đầu. <b>Quá 15 phút là thua.</b></li>
+      <li>3 sao nếu xong trong <b>15 giây × số vùng</b>; 2 sao trong <b>40 giây × số vùng</b>; còn lại 1 sao.</li>
+      <li>Mỗi lần dùng gợi ý bị cộng thêm 30 giây.</li>
+    </ul>
+    <button class="btn primary wide" data-close>Đã hiểu!</button>
+  </div>
+</div>
+
+<!-- ============ KẾT QUẢ ============ -->
+<div class="modal hidden" id="modal-result">
+  <div class="card result">
+    <div class="res-icon" id="res-icon"><svg viewBox="0 0 24 24"><use href="#crown"/></svg></div>
+    <h2 id="res-title">Chiến thắng!</h2>
+    <div class="stars" id="res-stars">
+      <svg class="star" viewBox="0 0 24 24"><use href="#i-star"/></svg><svg class="star" viewBox="0 0 24 24"><use href="#i-star"/></svg><svg class="star" viewBox="0 0 24 24"><use href="#i-star"/></svg>
+    </div>
+    <p id="res-msg" class="res-msg"></p>
+    <div class="res-stats">
+      <div><small>Thời gian</small><b id="res-time">00:00</b></div>
+      <div><small>Kỷ lục</small><b id="res-best">--:--</b></div>
+      <div><small>Gợi ý</small><b id="res-hints">0</b></div>
+    </div>
+    <div class="stack row">
+      <button class="btn primary" id="res-again">Ván mới</button>
+      <button class="btn" id="res-menu">Chọn màn</button>
+    </div>
+  </div>
+</div>
+
+<div id="loading" class="loading hidden"><div class="spin"><svg viewBox="0 0 24 24"><use href="#crown"/></svg></div><p>Đang tạo màn chơi…</p></div>
+<div id="toast" class="toast"></div>
+<canvas id="fx"></canvas>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="crown" viewBox="0 0 24 24">
+    <g fill="currentColor" stroke="#1b1530" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round">
+      <path d="M2.8 7.8l4.6 4 4.6-7.2 4.6 7.2 4.6-4-2 11.2H4.8z"/>
+      <circle cx="2.8" cy="7" r="1.5"/><circle cx="12" cy="3.7" r="1.5"/><circle cx="21.2" cy="7" r="1.5"/>
+      <rect x="4.6" y="19.4" width="14.8" height="2.3" rx="1.1"/>
+    </g>
+  </symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 2.6l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.5l-5.9 3.1 1.2-6.5L2.5 9.5l6.6-.9z"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+  <symbol id="i-pause" viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4.5l12 7.5-12 7.5z" fill="currentColor"/></symbol>
+  <symbol id="i-undo" viewBox="0 0 24 24"><path d="M9 14L4 9l5-5M4 9h10.5a5.5 5.5 0 010 11H11"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="i-bulb" viewBox="0 0 24 24"><path d="M9.5 18h5M10 21h4M12 3a6 6 0 00-3.6 10.8c.7.5 1.1 1.3 1.1 2.2h5c0-.9.4-1.7 1.1-2.2A6 6 0 0012 3z"/></symbol>
+  <symbol id="i-reset" viewBox="0 0 24 24"><path d="M4 12a8 8 0 103-6.2M4 4v5h5"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 8.5V13l3 2M9 2.5h6"/></symbol>
+  <symbol id="i-help" viewBox="0 0 24 24"><path d="M9 9a3 3 0 116 0c0 2-3 2.5-3 4.5M12 18h.01"/></symbol>
+  <symbol id="i-vol" viewBox="0 0 24 24"><path d="M4 9.5v5h4l5 4v-13l-5 4zM16.5 9a4 4 0 010 6M19 6.5a8 8 0 010 11"/></symbol>
+  <symbol id="i-mute" viewBox="0 0 24 24"><path d="M4 9.5v5h4l5 4v-13l-5 4zM17 9.5l5 5M22 9.5l-5 5"/></symbol>
+</svg>
+<script src="app.js"></script>
+</body>
+</html>
